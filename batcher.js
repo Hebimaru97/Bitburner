@@ -72,6 +72,11 @@ export async function main(ns) {
   let targetWeakenTime = targetHackTime * 4;
   let targetGrowTime = targetHackTime * 3.2;
 
+  let money = ns.getServerMoneyAvailable(target);
+  const maxMoney = ns.getServerMaxMoney(server);
+
+//ns.tprint(Math.ceil(ns.growthAnalyze(target, maxMoney / money)))
+
   //attacking from home for now
   let attacker = "home"
 
@@ -88,21 +93,22 @@ export async function main(ns) {
   let threadsHk = Math.floor(freeRam / costPerInstHk);
   let threadsGr = Math.floor(freeRam / costPerInstGr);
   //weaken to 0, then grow x12, then weaken 1 loop
-  if (!IsPrepped(ns, target)) {
-    console.log("prepping")
-    await Prep(ns, target, attacker, threadsGr, threadsWk);
-  } else {
-    while (true) {
+  while (true) {
+    if (!IsPrepped(ns, target)) {
+      console.log("prepping")
+      await Prep(ns, target, attacker, threadsGr, threadsWk);
+    } else {
+      //console.log(Math.ceil(ns.hackAnalyzeThreads(server, money)));
       console.log("attacking ", target, " with HWGW, sice it is prepped")
       let pids = [];//do the HWGW loop
       console.log("exec Hk")
-      pids.push(ns.exec("bin.hk.js", attacker, Math.min(threadsHk, 100), target));
+      pids.push(ns.exec("bin.hk.js", attacker, Math.min(threadsHk, 1), target));
       console.log("exec Wk")
-      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 1), target));
       console.log("exec Gr")
-      pids.push(ns.exec("bin.gr.js", attacker, Math.min(threadsGr, 100), target));
+      pids.push(ns.exec("bin.gr.js", attacker, Math.min(threadsGr, 300), target));
       console.log("exec Wk")
-      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 1), target));
       await WaitPids(ns, pids);
     }
   }
