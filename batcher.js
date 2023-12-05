@@ -67,6 +67,7 @@ export async function main(ns) {
   target = (serverObjects[0].hostname);//optimal target (probably)
 
   ns.tprint("attacking ", target);
+  console.log("attacking ", target);
   let targetHackTime = ns.getHackTime(target); //calculate time for hgw
   let targetWeakenTime = targetHackTime * 4;
   let targetGrowTime = targetHackTime * 3.2;
@@ -88,13 +89,21 @@ export async function main(ns) {
   let threadsGr = Math.floor(freeRam / costPerInstGr);
   //weaken to 0, then grow x12, then weaken 1 loop
   if (!IsPrepped(ns, target)) {
-    ns.tprint("prrepping")
+    console.log("prepping")
     await Prep(ns, target, attacker, threadsGr, threadsWk);
   } else {
-    let pids = [];//do the HWGW loop
-    pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 1000), target));
-    pids.push(ns.exec("bin.hk.js", attacker, Math.min(threadsHk, 1000), target));
-    pids.push(ns.exec("bin.gw.js", attacker, Math.min(threadsGr, 1000), target));
-    await WaitPids(ns, pids);
+    while (true) {
+      console.log("attacking ", target, " with HWGW, sice it is prepped")
+      let pids = [];//do the HWGW loop
+      console.log("exec Hk")
+      pids.push(ns.exec("bin.hk.js", attacker, Math.min(threadsHk, 100), target));
+      console.log("exec Wk")
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));
+      console.log("exec Gr")
+      pids.push(ns.exec("bin.gr.js", attacker, Math.min(threadsGr, 100), target));
+      console.log("exec Wk")
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));
+      await WaitPids(ns, pids);
+    }
   }
 }
