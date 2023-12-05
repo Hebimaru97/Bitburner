@@ -10,12 +10,22 @@ export function IsPrepped(ns, target) {
 }
 
 export async function Prep(ns, target, attacker, threadsGr, threadsWk) {
+  const minSec = ns.getServerMinSecurityLevel(target);
+  const sec = ns.getServerSecurityLevel(target);
   while (!IsPrepped(ns, target)) {
-    let pids = [];
-    console.log("now gr")
-    pids.push(ns.exec("bin.gw.js", attacker, Math.min(threadsGr, 1), target));//then  if !target.moneyMax exec grow -t 12
-    console.log("now Wk")
-    pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 1), target));//then exec weaken 1 unitl target.moneyMax
-    await WaitPids(ns, pids);
+    if (sec !== minSec) {
+      console.log("weakening to 0")
+      let pids = [];
+      console.log("now Wk")
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));//then exec weaken 1 unitl target.moneyMax
+    } else {
+      console.log("running GW until prepped")
+      let pids = [];
+      console.log("now gr")
+      pids.push(ns.exec("bin.gr.js", attacker, Math.min(threadsGr, 100), target));//then  if !target.moneyMax exec grow -t 12
+      console.log("now Wk")
+      pids.push(ns.exec("bin.wk.js", attacker, Math.min(threadsWk, 100), target));//then exec weaken 1 unitl target.moneyMax
+      await WaitPids(ns, pids);
+    }
   }
 }
